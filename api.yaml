@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: mensageria
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: api
+
+  template:
+    metadata:
+      labels:
+        app: api
+
+    spec:
+      containers:
+        - name: api
+          image: mensageria-api:1.0
+          imagePullPolicy: Never
+
+          ports:
+            - containerPort: 5000
+
+          env:
+            - name: RABBITMQ_HOST
+              value: "rabbitmq"
+
+            - name: QUEUE
+              value: "fila_teste"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: mensageria
+
+spec:
+  type: NodePort
+
+  selector:
+    app: api
+
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      nodePort: 30500

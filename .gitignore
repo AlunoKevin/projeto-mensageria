@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Ambientes virtuais
+.venv/
+venv/
+
+# Arquivos temporários da demonstração
+scripts/.port-forward.pid
+scripts/port-forward.log
+scripts/qr-code.png
+
+# Arquivos do sistema
+.DS_Store
+*.swp

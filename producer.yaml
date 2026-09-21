@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer
+  namespace: mensageria
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: producer
+
+  template:
+    metadata:
+      labels:
+        app: producer
+
+    spec:
+      containers:
+        - name: producer
+          image: mensageria-producer:1.0
+          imagePullPolicy: Never
+
+          env:
+            - name: RABBITMQ_HOST
+              value: "rabbitmq"
+
+            - name: QUEUE
+              value: "fila_teste"
+
+            - name: RATE
+              value: "100"
