@@ -163,47 +163,63 @@ kubectl get namespaces
 
 ---
 
-# 7. Construindo as imagens
+# 7. Imagens Docker
 
-As imagens utilizadas pelo projeto são:
+As imagens utilizadas pelo projeto são publicadas no Docker Hub:
 
 ```text
-mensageria-api
-mensageria-worker
-mensageria-producer
+speedowagon/mensageria-api:1.0
+speedowagon/mensageria-worker:1.0
+speedowagon/mensageria-producer:1.0
 ```
 
-No ambiente local com Minikube, as imagens podem ser construídas diretamente dentro do ambiente do Minikube.
+Os manifests Kubernetes já estão configurados para utilizar essas imagens. Dessa forma, os componentes podem ser executados tanto no Minikube quanto em outro cluster Kubernetes, sem depender das imagens construídas localmente.
+
+### Construção das imagens
+
+Caso seja necessário reconstruir as imagens, execute na raiz do projeto:
 
 ### API
 
 ```bash
-cd api
-minikube image build -t mensageria-api:1.0 .
-cd ..
+docker build -t speedowagon/mensageria-api:1.0 ./api
 ```
 
 ### Worker
 
 ```bash
-cd worker
-minikube image build -t mensageria-worker:1.0 .
-cd ..
+docker build -t speedowagon/mensageria-worker:1.0 ./worker
 ```
 
 ### Producer
 
 ```bash
-cd producer
-minikube image build -t mensageria-producer:1.0 .
-cd ..
+docker build -t speedowagon/mensageria-producer:1.0 ./producer
 ```
 
 Verifique as imagens:
 
 ```bash
-minikube image ls
+docker images | grep speedowagon/mensageria
 ```
+
+### Publicação no Docker Hub
+
+Após reconstruir uma imagem, ela pode ser publicada com:
+
+```bash
+docker push speedowagon/mensageria-api:1.0
+docker push speedowagon/mensageria-worker:1.0
+docker push speedowagon/mensageria-producer:1.0
+```
+
+É necessário estar autenticado no Docker Hub:
+
+```bash
+docker login
+```
+
+As imagens publicadas permitem que os nós de um cluster Kubernetes obtenham os componentes diretamente do registro de containers.
 
 ---
 
@@ -845,9 +861,29 @@ A arquitetura planejada será:
 
 Os manifests Kubernetes serão reutilizados para permitir que o projeto seja reproduzido em outro ambiente.
 
-As imagens da API, Worker e Producer deverão estar disponíveis em um registro de containers para que os nós do cluster possam obtê-las.
+As imagens da API, Worker e Producer estão publicadas no Docker Hub:
 
-Essa etapa será configurada separadamente da execução local com Minikube.
+```text
+speedowagon/mensageria-api:1.0
+speedowagon/mensageria-worker:1.0
+speedowagon/mensageria-producer:1.0
+```
+
+Dessa forma, os nós do cluster podem obter as imagens diretamente do registro de containers.
+
+A configuração das máquinas virtuais, da rede e do cluster Kubernetes no Oracle Cloud é realizada separadamente da execução local com Minikube.
+
+### Observação sobre a distribuição do RabbitMQ
+
+Na configuração atual, o RabbitMQ utiliza uma única réplica:
+
+```yaml
+replicas: 1
+```
+
+Portanto, a utilização de três máquinas virtuais não significa, por si só, que o RabbitMQ esteja configurado como um cluster de três nós.
+
+A configuração atual permite distribuir os componentes Kubernetes, principalmente os Workers, entre os nós do cluster. Caso seja necessário estudar especificamente um cluster distribuído do RabbitMQ, será necessária uma configuração adicional com múltiplos nós do RabbitMQ.
 
 ---
 
@@ -855,11 +891,15 @@ Essa etapa será configurada separadamente da execução local com Minikube.
 
 Depois que o ambiente estiver configurado, o fluxo principal da apresentação será:
 
-### 1. Iniciar o Minikube
+### 1. Iniciar o Kubernetes
+
+No ambiente local:
 
 ```bash
 minikube start
 ```
+
+No Oracle Cloud, essa etapa corresponde à utilização do cluster Kubernetes já configurado nas máquinas virtuais.
 
 ### 2. Verificar o cluster
 
@@ -889,6 +929,8 @@ Celular → API → RabbitMQ → Worker
 
 ### 6. Abrir o Grafana
 
+No ambiente local, utilizando o port-forward configurado:
+
 ```text
 http://localhost:3000
 ```
@@ -907,7 +949,7 @@ Mensagens não confirmadas
 
 ### 8. Alterar a carga
 
-Pode-se ligar o Producer ou aumentar o número de Workers para observar a mudança no comportamento do sistema.
+Pode-se ligar o Producer, aumentar sua taxa de produção ou aumentar o número de Workers para observar a mudança no comportamento do sistema.
 
 ### 9. Encerrar
 
