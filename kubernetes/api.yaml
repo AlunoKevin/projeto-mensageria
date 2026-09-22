@@ -18,8 +18,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: mensageria-api:1.0
-          imagePullPolicy: Never
+          image: speedowagon/mensageria-api:1.0
 
           ports:
             - containerPort: 5000

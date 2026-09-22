@@ -18,8 +18,7 @@ spec:
     spec:
       containers:
         - name: producer
-          image: mensageria-producer:1.0
-          imagePullPolicy: Never
+          image: speedowagon/mensageria-producer:1.0
 
           env:
             - name: RABBITMQ_HOST
